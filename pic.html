@@ -1,11 +1,11 @@
 <html><head><base href="https://websim.ai/webtools/image-editor" />
-<title>שרטוט</title>
+<title>שרטוט על גבי תמונה - עורך תמונות WebSim</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
     margin: 0;
     padding: 20px;
     display: flex;
@@ -13,34 +13,48 @@
     align-items: center;
   }
   h1 {
-    color: #333;
+    color: #2c3e50;
     text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
   }
   #canvas-container {
     margin: 20px 0;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
   }
   canvas {
-    border: 1px solid #ddd;
-    background-color: #fff;
+    display: block;
   }
   #controls {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
   }
-  button {
-    padding: 10px 15px;
+  button, label.file-input {
+    padding: 12px 20px;
     font-size: 16px;
     cursor: pointer;
-    background-color: #4CAF50;
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 5px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  button:hover {
-    background-color: #45a049;
+  button:hover, label.file-input:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
   }
   #color-picker {
     width: 50px;
@@ -49,24 +63,64 @@
     border: none;
     border-radius: 50%;
     overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  #color-picker:hover {
+    transform: scale(1.1);
   }
   #brush-size {
-    width: 100px;
+    width: 150px;
+    margin: 0 10px;
+  }
+  #background-input {
+    display: none;
+  }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .icon {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    margin-right: 5px;
   }
 </style>
 </head>
 <body>
-  <h1>שרטטו את התשובה על גבי התמונה והורידו אותה</h1>
+  <h1>שרטוט על גבי תמונה</h1>
   
   <div id="controls">
-    <input type="color" id="color-picker" value="#000000">
-    <input type="range" id="brush-size" min="1" max="20" value="5">
-    <button id="clear-btn">נקה</button>
-    <button id="download-btn">הורד תמונה</button>
+    <div class="control-group">
+      <input type="color" id="color-picker" value="#000000">
+      <input type="range" id="brush-size" min="1" max="50" value="5">
+      <span id="brush-size-display">5px</span>
+    </div>
+    <button id="clear-btn">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14V4zM6 7v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm8 9H10v-6h4v6z"/>
+      </svg>
+      נקה ציור
+    </button>
+    <button id="download-btn">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+      </svg>
+      הורד תמונה
+    </button>
+    <label for="background-input" class="file-input">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
+      </svg>
+      העלה תמונת רקע
+    </label>
+    <input type="file" id="background-input" accept="image/*">
   </div>
   
   <div id="canvas-container">
-    <canvas id="canvas" width="600" height="400"></canvas>
+    <canvas id="canvas" width="800" height="600"></canvas>
   </div>
 
   <script>
@@ -74,22 +128,30 @@
     const ctx = canvas.getContext('2d');
     const colorPicker = document.getElementById('color-picker');
     const brushSize = document.getElementById('brush-size');
+    const brushSizeDisplay = document.getElementById('brush-size-display');
     const clearBtn = document.getElementById('clear-btn');
     const downloadBtn = document.getElementById('download-btn');
+    const backgroundInput = document.getElementById('background-input');
 
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
 
-    // Load the image
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.src = 'https://www.photo-art.co.il/wp-content/uploads/2015/09/BY1A4457.jpg';
-    img.onload = function() {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 1000, 1000, canvas.width, canvas.height);
-    };
+    let backgroundImg = new Image();
+    backgroundImg.crossOrigin = "Anonymous";
+
+    function loadDefaultBackground() {
+      backgroundImg.src = 'https://img.freepik.com/free-photo/beautiful-scenery-road-forest-with-lot-colorful-autumn-trees_181624-30942.jpg';
+      backgroundImg.onload = drawBackground;
+    }
+
+    loadDefaultBackground();
+
+    function drawBackground() {
+      canvas.width = backgroundImg.width;
+      canvas.height = backgroundImg.height;
+      ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+    }
 
     function startDrawing(e) {
       isDrawing = true;
@@ -117,16 +179,57 @@
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    clearBtn.addEventListener('click', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    });
+    clearBtn.addEventListener('click', drawBackground);
 
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
-      link.download = 'hebrew-cat-edited.png';
+      link.download = 'שרטוט-על-גבי-תמונה.png';
       link.href = canvas.toDataURL();
       link.click();
+    });
+
+    backgroundInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          backgroundImg = new Image();
+          backgroundImg.onload = drawBackground;
+          backgroundImg.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    brushSize.addEventListener('input', () => {
+      brushSizeDisplay.textContent = `${brushSize.value}px`;
+    });
+
+    // Enable touch support for drawing
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      canvas.dispatchEvent(mouseEvent);
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      canvas.dispatchEvent(mouseEvent);
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const mouseEvent = new MouseEvent('mouseup', {});
+      canvas.dispatchEvent(mouseEvent);
     });
   </script>
 </body></html>
