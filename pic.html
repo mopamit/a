@@ -1,5 +1,5 @@
 <html><head><base href="https://websim.ai/webtools/image-editor" />
-<title>שרטוט על גבי תמונה - עורך תמונות WebSim</title>
+<title>עריכת תמונה</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
@@ -11,6 +11,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    direction: rtl;
   }
   h1 {
     color: #2c3e50;
@@ -24,20 +25,23 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
   }
   canvas {
     display: block;
   }
-  #controls {
+  #controls, #text-controls {
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 800px;
   }
   button, label.file-input {
     padding: 12px 20px;
@@ -51,10 +55,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
   button:hover, label.file-input:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
   #color-picker {
     width: 50px;
@@ -65,9 +71,11 @@
     overflow: hidden;
     cursor: pointer;
     transition: transform 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
   #color-picker:hover {
     transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
   #brush-size {
     width: 150px;
@@ -85,14 +93,63 @@
     width: 20px;
     height: 20px;
     fill: currentColor;
-    margin-right: 5px;
+    margin-left: 5px;
+  }
+  #text-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 200px;
+    transition: border-color 0.3s ease;
+  }
+  #text-input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+  }
+  .text-box {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 1px solid #000;
+    padding: 5px;
+    cursor: move;
+    user-select: none;
+    color: #000;
+    display: inline-block;
+  }
+  #clear-btn {
+    margin-right: auto;
+    background-color: #e74c3c;
+  }
+  #clear-btn:hover {
+    background-color: #c0392b;
+  }
+  #download-btn {
+    background-color: #27ae60;
+  }
+  #download-btn:hover {
+    background-color: #2ecc71;
+  }
+  #add-text-btn {
+    background-color: #f39c12;
+  }
+  #add-text-btn:hover {
+    background-color: #f1c40f;
   }
 </style>
 </head>
 <body>
-  <h1>שרטוט על גבי תמונה</h1>
+  <h1>עריכת תמונה</h1>
   
   <div id="controls">
+    <label for="background-input" class="file-input">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
+      </svg>
+      העלה תמונת רקע
+    </label>
+    <input type="file" id="background-input" accept="image/*">
     <div class="control-group">
       <input type="color" id="color-picker" value="#000000">
       <input type="range" id="brush-size" min="1" max="50" value="5">
@@ -104,19 +161,24 @@
       </svg>
       נקה ציור
     </button>
+  </div>
+
+  <div id="text-controls">
+    <div class="control-group">
+      <input type="text" id="text-input" placeholder="הקלד טקסט כאן">
+      <button id="add-text-btn">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        הוסף טקסט
+      </button>
+    </div>
     <button id="download-btn">
       <svg class="icon" viewBox="0 0 24 24">
         <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
       </svg>
-      הורד תמונה
+      הורד תמונה ערוכה
     </button>
-    <label for="background-input" class="file-input">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/>
-      </svg>
-      העלה תמונת רקע
-    </label>
-    <input type="file" id="background-input" accept="image/*">
   </div>
   
   <div id="canvas-container">
@@ -132,10 +194,15 @@
     const clearBtn = document.getElementById('clear-btn');
     const downloadBtn = document.getElementById('download-btn');
     const backgroundInput = document.getElementById('background-input');
+    const textInput = document.getElementById('text-input');
+    const addTextBtn = document.getElementById('add-text-btn');
+    const canvasContainer = document.getElementById('canvas-container');
 
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
+    let isDragging = false;
+    let dragTarget = null;
 
     let backgroundImg = new Image();
     backgroundImg.crossOrigin = "Anonymous";
@@ -151,6 +218,8 @@
       canvas.width = backgroundImg.width;
       canvas.height = backgroundImg.height;
       ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+      canvasContainer.style.width = `${canvas.width}px`;
+      canvasContainer.style.height = `${canvas.height}px`;
     }
 
     function startDrawing(e) {
@@ -183,7 +252,7 @@
 
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
-      link.download = 'שרטוט-על-גבי-תמונה.png';
+      link.download = 'edited-image.png';
       link.href = canvas.toDataURL();
       link.click();
     });
@@ -203,6 +272,91 @@
 
     brushSize.addEventListener('input', () => {
       brushSizeDisplay.textContent = `${brushSize.value}px`;
+    });
+
+    addTextBtn.addEventListener('click', () => {
+      const text = textInput.value;
+      if (text) {
+        const textBox = document.createElement('div');
+        textBox.className = 'text-box';
+        textBox.textContent = text;
+        textBox.style.fontSize = '16px';
+        textBox.style.right = '50px';
+        textBox.style.top = '50px';
+        canvasContainer.appendChild(textBox);
+        
+        textBox.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          dragTarget = textBox;
+          dragTarget.style.zIndex = 1000;
+          const rect = canvasContainer.getBoundingClientRect();
+          lastX = e.clientX - rect.right;
+          lastY = e.clientY - rect.top;
+        });
+
+        // Add resize functionality
+        const resizer = document.createElement('div');
+        resizer.style.width = '10px';
+        resizer.style.height = '10px';
+        resizer.style.background = 'blue';
+        resizer.style.position = 'absolute';
+        resizer.style.right = '-5px';
+        resizer.style.bottom = '-5px';
+        resizer.style.cursor = 'se-resize';
+        textBox.appendChild(resizer);
+
+        let isResizing = false;
+        let initialFontSize;
+        resizer.addEventListener('mousedown', (e) => {
+          isResizing = true;
+          initialFontSize = parseFloat(getComputedStyle(textBox).fontSize);
+          e.stopPropagation();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (isResizing) {
+            const rect = textBox.getBoundingClientRect();
+            const newWidth = e.clientX - rect.left;
+            const scaleFactor = newWidth / rect.width;
+            let newFontSize = initialFontSize * scaleFactor;
+            
+            // Limit font size to 34px
+            newFontSize = Math.min(newFontSize, 34);
+            
+            textBox.style.fontSize = `${newFontSize}px`;
+            
+            // Adjust the box size to fit the text content
+            textBox.style.width = 'auto';
+            textBox.style.height = 'auto';
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          isResizing = false;
+        });
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging && dragTarget) {
+        const rect = canvasContainer.getBoundingClientRect();
+        const x = e.clientX - rect.right;
+        const y = e.clientY - rect.top;
+        const dx = x - lastX;
+        const dy = y - lastY;
+        dragTarget.style.right = `${parseInt(dragTarget.style.right) - dx}px`;
+        dragTarget.style.top = `${dragTarget.offsetTop + dy}px`;
+        lastX = x;
+        lastY = y;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      if (dragTarget) {
+        dragTarget.style.zIndex = '';
+        dragTarget = null;
+      }
     });
 
     // Enable touch support for drawing
